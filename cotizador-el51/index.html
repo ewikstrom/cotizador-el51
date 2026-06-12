@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cotizador — El 51 de Princesa</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.x/dist/tabler-icons.min.css">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #f9f8f6;
+      --surface: #ffffff;
+      --surface2: #f1efea;
+      --border: rgba(0,0,0,0.10);
+      --border-md: rgba(0,0,0,0.18);
+      --text: #1a1a18;
+      --text-muted: #6b6b67;
+      --text-hint: #a0a09b;
+      --accent: #C94A28;
+      --accent-bg: #FAECE7;
+      --accent-border: #e8896a;
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 1.5rem 1rem 4rem;
+    }
+
+    .layout {
+      max-width: 780px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 300px;
+      gap: 1.5rem;
+      align-items: start;
+    }
+
+    @media (max-width: 680px) {
+      .layout { grid-template-columns: 1fr; }
+      .sidebar { order: -1; }
+    }
+
+    /* HEADER */
+    .header {
+      grid-column: 1 / -1;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-bottom: 1.25rem;
+      border-bottom: 0.5px solid var(--border-md);
+      margin-bottom: 0.25rem;
+    }
+    .logo { font-size: 24px; font-weight: 600; letter-spacing: -0.5px; color: var(--text); }
+    .logo span { color: var(--accent); }
+    .logo-sub { font-size: 12px; color: var(--text-hint); margin-top: 2px; letter-spacing: 0.04em; }
+
+    /* COMENSALES */
+    .comensales-bar {
+      grid-column: 1 / -1;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: var(--surface);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 0.875rem 1.125rem;
+    }
+    .comensales-bar label { font-size: 14px; color: var(--text-muted); flex: 1; }
+    .qty-ctrl { display: flex; align-items: center; gap: 10px; }
+    .qty-btn {
+      width: 32px; height: 32px;
+      border: 0.5px solid var(--border-md);
+      background: var(--bg);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      font-size: 18px;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--text);
+      transition: background 0.1s;
+    }
+    .qty-btn:hover { background: var(--surface2); }
+    .qty-val { font-size: 17px; font-weight: 600; min-width: 28px; text-align: center; }
+
+    /* MAIN CONTENT */
+    .main { display: flex; flex-direction: column; gap: 0; }
+
+    .section-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-hint);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 1.25rem 0 0.6rem;
+    }
+
+    .items-list { display: flex; flex-direction: column; gap: 5px; }
+
+    .item-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 12px;
+      background: var(--surface);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      transition: border-color 0.15s, background 0.15s;
+    }
+    .item-row.active {
+      border-color: var(--accent-border);
+      background: var(--accent-bg);
+    }
+    .item-name { font-size: 13.5px; color: var(--text); line-height: 1.35; }
+    .item-price { font-size: 12px; color: var(--text-hint); margin-top: 2px; }
+    .item-ctrl { display: flex; align-items: center; gap: 7px; }
+    .item-qty { font-size: 14px; font-weight: 600; min-width: 20px; text-align: center; color: var(--text); }
+    .item-btn {
+      width: 26px; height: 26px;
+      border: 0.5px solid var(--border-md);
+      background: var(--bg);
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 16px;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--text);
+    }
+    .item-btn:hover { background: var(--surface2); }
+
+    /* SIDEBAR / COTIZACIÓN */
+    .sidebar { position: sticky; top: 1.5rem; }
+
+    .cotizacion {
+      background: var(--surface);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1.25rem;
+    }
+    .cotizacion-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .cotizacion-title i { color: var(--accent); font-size: 18px; }
+    .lineas { display: flex; flex-direction: column; gap: 0; min-height: 60px; }
+    .linea {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 8px;
+      font-size: 12.5px;
+      padding: 5px 0;
+      border-bottom: 0.5px solid var(--border);
+      color: var(--text-muted);
+    }
+    .linea:last-child { border-bottom: none; }
+    .linea .l-name { flex: 1; line-height: 1.3; }
+    .linea .l-price { font-weight: 500; color: var(--text); white-space: nowrap; }
+    .empty-msg {
+      font-size: 13px;
+      color: var(--text-hint);
+      text-align: center;
+      padding: 1.5rem 0;
+    }
+    .sep { border: none; border-top: 0.5px solid var(--border-md); margin: 12px 0 10px; }
+    .total-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+    }
+    .total-label { font-size: 13px; color: var(--text-muted); }
+    .total-amount { font-size: 24px; font-weight: 700; color: var(--text); letter-spacing: -0.5px; }
+    .per-comensal { font-size: 12px; color: var(--text-hint); text-align: right; margin-top: 4px; }
+    .reset-btn {
+      margin-top: 1rem;
+      width: 100%;
+      padding: 9px;
+      border: 0.5px solid var(--border-md);
+      background: transparent;
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      color: var(--text-muted);
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+    }
+    .reset-btn:hover { background: var(--surface2); }
+
+    .print-btn {
+      margin-top: 8px;
+      width: 100%;
+      padding: 9px;
+      border: 0.5px solid var(--accent-border);
+      background: var(--accent-bg);
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      color: var(--accent);
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+    }
+    .print-btn:hover { background: #f5d4c8; }
+
+    @media print {
+      .main { display: none; }
+      .comensales-bar { display: none; }
+      .sidebar { position: static; }
+      .layout { grid-template-columns: 1fr; }
+      .cotizacion { border: 1px solid #ccc; }
+      .print-btn, .reset-btn { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="layout">
+
+  <div class="header">
+    <div>
+      <div class="logo">El <span>51</span> de Princesa</div>
+      <div class="logo-sub">@EL51DEPRINCESA · Cotizador de carta</div>
+    </div>
+  </div>
+
+  <div class="comensales-bar" style="grid-column: 1 / -1;">
+    <label><i class="ti ti-users" style="font-size:16px;vertical-align:-2px;margin-right:8px;"></i>Número de comensales</label>
+    <div class="qty-ctrl">
+      <button class="qty-btn" onclick="changeComensales(-1)" aria-label="Menos comensales">−</button>
+      <div class="qty-val" id="comensalesVal">2</div>
+      <button class="qty-btn" onclick="changeComensales(1)" aria-label="Más comensales">+</button>
+    </div>
+  </div>
+
+  <div class="main">
+
+    <div class="section-label">Pinchos · por unidad</div>
+    <div class="items-list" id="sec-pinchos"></div>
+
+    <div class="section-label">Bocatas</div>
+    <div class="items-list" id="sec-bocatas"></div>
+
+    <div class="section-label">Raciones</div>
+    <div class="items-list" id="sec-raciones"></div>
+
+    <div class="section-label">Ibéricos</div>
+    <div class="items-list" id="sec-ibericos"></div>
+
+    <div class="section-label">Conservas</div>
+    <div class="items-list" id="sec-conservas"></div>
+
+    <div class="section-label">Postres</div>
+    <div class="items-list" id="sec-postres"></div>
+
+  </div>
+
+  <div class="sidebar">
+    <div class="cotizacion">
+      <div class="cotizacion-title">
+        <i class="ti ti-receipt" aria-hidden="true"></i> Cotización
+      </div>
+      <div class="lineas" id="lineas">
+        <div class="empty-msg">Selecciona platos para ver el resumen</div>
+      </div>
+      <div class="sep"></div>
+      <div class="total-row">
+        <span class="total-label">Total</span>
+        <span class="total-amount" id="totalAmt">0,00 €</span>
+      </div>
+      <div class="per-comensal" id="perComensal"></div>
+      <button class="reset-btn" onclick="resetTodo()">
+        <i class="ti ti-refresh" style="font-size:14px;"></i> Limpiar selección
+      </button>
+      <button class="print-btn" onclick="window.print()">
+        <i class="ti ti-printer" style="font-size:14px;"></i> Imprimir / guardar PDF
+      </button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const MENU = {
+  pinchos: [
+    { id:'p1', name:'Huevo relleno de los de toda la vida', price: 3 },
+    { id:'p2', name:'Gilda "El 51"', price: 4 },
+    { id:'p3', name:'Banderilla "El 13"', price: 4 },
+    { id:'p4', name:'Marinera de Murcia con anchoa del Cantábrico', price: 4 },
+    { id:'p5', name:'Pincho de tortilla Monalisa', price: 4.50 },
+    { id:'p6', name:'Brioche de anchoa del Cantábrico FREDO Gran Reserva con mantequilla ahumada', price: 4.50 },
+    { id:'p7', name:'Brioche de steak tartare', price: 4.50 },
+    { id:'p8', name:'Brioche de salmón', price: 4.50 },
+    { id:'p9', name:'Mixto de jamón y queso', price: 6 },
+    { id:'p10', name:'Mixto de jamón ibérico y queso brie', price: 9 },
+  ],
+  bocatas: [
+    { id:'b1', name:'Tortilla de patata — montadito', price: 6 },
+    { id:'b2', name:'Tortilla de patata — baguette', price: 7 },
+    { id:'b3', name:'Bonito en escabeche con pimientos morrones — montadito', price: 6 },
+    { id:'b4', name:'Bonito en escabeche con pimientos morrones — baguette', price: 8 },
+    { id:'b5', name:'Anchoas con tomate, AOVE y mayonesa — montadito', price: 6 },
+    { id:'b6', name:'Anchoas con tomate, AOVE y mayonesa — baguette', price: 6 },
+    { id:'b7', name:'Lomo con queso — montadito', price: 6 },
+    { id:'b8', name:'Lomo con queso — baguette', price: 6 },
+    { id:'b9', name:'Paleta de jamón de Bellota Esencia Jabu — montadito', price: 10 },
+    { id:'b10', name:'Paleta de jamón de Bellota Esencia Jabu — baguette', price: 12 },
+    { id:'b11', name:'Lomo Bellota 100% Ibérico Jabu — montadito', price: 10 },
+    { id:'b12', name:'Lomo Bellota 100% Ibérico Jabu — baguette', price: 14 },
+  ],
+  raciones: [
+    { id:'r1', name:'Aceitunas gordales de Sevilla — tapa', price: 4 },
+    { id:'r2', name:'Aceitunas gordales de Sevilla — media', price: 7 },
+    { id:'r3', name:'Aceitunas gordales de Sevilla — ración', price: 6 },
+    { id:'r4', name:'Tomate de temporada con AOVE y cebolleta — tapa', price: 6 },
+    { id:'r5', name:'Tomate de temporada con AOVE y cebolleta — media', price: 9 },
+    { id:'r6', name:'Tomate de temporada con AOVE y cebolleta — ración', price: 7 },
+    { id:'r7', name:'Boquerones del Cantábrico FREDO en vinagre y AOVE — tapa', price: 6 },
+    { id:'r8', name:'Boquerones del Cantábrico FREDO en vinagre y AOVE — media', price: 9 },
+    { id:'r9', name:'Boquerones del Cantábrico FREDO en vinagre y AOVE — ración', price: 9 },
+    { id:'r10', name:'Ensaladilla rusa — tapa', price: 6 },
+    { id:'r11', name:'Ensaladilla rusa — media', price: 9 },
+    { id:'r12', name:'Ensaladilla rusa — ración', price: 9 },
+    { id:'r13', name:'Torreznos de Soria — tapa', price: 6 },
+    { id:'r14', name:'Torreznos de Soria — media', price: 9 },
+    { id:'r15', name:'Torreznos de Soria — ración', price: 9 },
+    { id:'r16', name:'Patatas fritas con salsa brava — tapa', price: 6 },
+    { id:'r17', name:'Patatas fritas con salsa brava — media', price: 9 },
+    { id:'r18', name:'Patatas fritas con salsa brava — ración', price: 9 },
+  ],
+  ibericos: [
+    { id:'i1', name:'Jamón de Bellota Esencia Jabu — tapa', price: 7 },
+    { id:'i2', name:'Jamón de Bellota Esencia Jabu — media', price: 14 },
+    { id:'i3', name:'Jamón de Bellota Esencia Jabu — entera', price: 22 },
+    { id:'i4', name:'Lomo de Bellota 100% Ibérico Jabu — tapa', price: 8 },
+    { id:'i5', name:'Lomo de Bellota 100% Ibérico Jabu — media', price: 14 },
+    { id:'i6', name:'Lomo de Bellota 100% Ibérico Jabu — entera', price: 22 },
+    { id:'i7', name:'Salchichón Jabu — tapa', price: 6 },
+    { id:'i8', name:'Salchichón Jabu — media', price: 11 },
+    { id:'i9', name:'Salchichón Jabu — entera', price: 11 },
+    { id:'i10', name:'Chorizo Jabu — tapa', price: 6 },
+    { id:'i11', name:'Chorizo Jabu — media', price: 11 },
+    { id:'i12', name:'Chorizo Jabu — entera', price: 11 },
+    { id:'i13', name:'Queso curado de oveja — tapa', price: 5 },
+    { id:'i14', name:'Queso curado de oveja — media', price: 10 },
+    { id:'i15', name:'Queso curado de oveja — entera', price: 10 },
+  ],
+  conservas: [
+    { id:'c1', name:'Anchoa del Cantábrico FREDO Selección 00 Gran Reserva (120g)', price: 26 },
+    { id:'c2', name:'Berberechos (25/35) Dani', price: 19 },
+    { id:'c3', name:'Mejillones (6/8) Escuris', price: 20 },
+    { id:'c4', name:'Ventresca de atún Escuris', price: 16 },
+  ],
+  postres: [
+    { id:'d1', name:'Tarta de queso cremosa y casera', price: 7 },
+    { id:'d2', name:'Tarta de chocolate cremosa y casera', price: 7 },
+  ]
+};
+
+const SECTIONS = {
+  pinchos: 'sec-pinchos',
+  bocatas: 'sec-bocatas',
+  raciones: 'sec-raciones',
+  ibericos: 'sec-ibericos',
+  conservas: 'sec-conservas',
+  postres: 'sec-postres',
+};
+
+let comensales = 2;
+const qty = {};
+
+function fmt(n) { return n.toFixed(2).replace('.', ',') + ' €'; }
+
+function changeComensales(d) {
+  comensales = Math.max(1, comensales + d);
+  document.getElementById('comensalesVal').textContent = comensales;
+  recalcular();
+}
+
+function changeQty(id, d) {
+  qty[id] = Math.max(0, (qty[id] || 0) + d);
+  document.getElementById('qty_' + id).textContent = qty[id];
+  document.getElementById('row_' + id).classList.toggle('active', qty[id] > 0);
+  recalcular();
+}
+
+function getItem(id) {
+  for (const items of Object.values(MENU)) {
+    for (const item of items) {
+      if (item.id === id) return item;
+    }
+  }
+  return null;
+}
+
+function recalcular() {
+  const lineasEl = document.getElementById('lineas');
+  const totalEl = document.getElementById('totalAmt');
+  const perEl = document.getElementById('perComensal');
+  let total = 0;
+  const lineas = [];
+  for (const [id, q] of Object.entries(qty)) {
+    if (q > 0) {
+      const item = getItem(id);
+      if (item) {
+        const sub = item.price * q;
+        total += sub;
+        lineas.push({ name: item.name, q, sub });
+      }
+    }
+  }
+  if (lineas.length === 0) {
+    lineasEl.innerHTML = '<div class="empty-msg">Selecciona platos para ver el resumen</div>';
+    totalEl.textContent = '0,00 €';
+    perEl.textContent = '';
+  } else {
+    lineasEl.innerHTML = lineas.map(l =>
+      `<div class="linea"><span class="l-name">${l.name} × ${l.q}</span><span class="l-price">${fmt(l.sub)}</span></div>`
+    ).join('');
+    totalEl.textContent = fmt(total);
+    perEl.textContent = comensales > 1 ? fmt(total / comensales) + ' / comensal' : '';
+  }
+}
+
+function resetTodo() {
+  Object.keys(qty).forEach(k => { qty[k] = 0; });
+  document.querySelectorAll('.item-qty').forEach(el => el.textContent = '0');
+  document.querySelectorAll('.item-row').forEach(el => el.classList.remove('active'));
+  recalcular();
+}
+
+function buildSection(sectionId, items) {
+  const el = document.getElementById(sectionId);
+  el.innerHTML = items.map(item => `
+    <div class="item-row" id="row_${item.id}">
+      <div>
+        <div class="item-name">${item.name}</div>
+        <div class="item-price">${fmt(item.price)}</div>
+      </div>
+      <div class="item-ctrl">
+        <button class="item-btn" onclick="changeQty('${item.id}',-1)" aria-label="Quitar uno">−</button>
+        <div class="item-qty" id="qty_${item.id}">0</div>
+        <button class="item-btn" onclick="changeQty('${item.id}',1)" aria-label="Añadir uno">+</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+for (const [key, secId] of Object.entries(SECTIONS)) {
+  buildSection(secId, MENU[key]);
+}
+recalcular();
+</script>
+</body>
+</html>
